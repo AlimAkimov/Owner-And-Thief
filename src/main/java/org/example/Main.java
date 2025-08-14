@@ -54,8 +54,6 @@ public class Main {
                 owner1.join();
                 owner2.join();
                 owner3.join();
-                thief1.join();
-                thief2.join();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 System.err.println("Поток прерван: " + e.getMessage());
