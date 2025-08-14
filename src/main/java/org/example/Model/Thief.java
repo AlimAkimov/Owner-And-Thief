@@ -2,6 +2,8 @@ package org.example.Model;
 
 import java.util.List;
 
+import static org.example.Model.Item.random;
+
 public class Thief extends Thread {
     private Backpack backpack;
 
@@ -13,13 +15,18 @@ public class Thief extends Thread {
 
     public void run() {
         try {
+            Thread.sleep(random.nextInt(50)); // Случайная задержка 0–50 мс
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        try {
             List<Item> stolen = Apartment.steal(backpack.getMaximumWeight());
             if (!stolen.isEmpty()) {
                 backpack.addItemsToBackpack(stolen);
-                System.out.println(Thread.currentThread().getName() + " Вор украл в рюкзак: " + backpack);
+                System.out.println(Thread.currentThread().getName() + " вор украл: " + backpack);
             }
         } catch (IllegalArgumentException e) {
-            System.out.println(Thread.currentThread().getName() + " Ошибка при воровстве " + e.getMessage());
+            System.out.println(Thread.currentThread().getName() + " ошибка при воровстве " + e.getMessage());
         }
     }
 
