@@ -4,71 +4,53 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class Apartment {
-    private static ReentrantReadWriteLock readWriteLock = new ReentrantReadWriteLock();
-    private static List<Item> apartmentsItems = Collections.synchronizedList(new ArrayList<>());
+    private final List<Item> items = new ArrayList<>();
+    private final ReadWriteLock rwLock = new ReentrantReadWriteLock(true);
+    private final Lock readLock = rwLock.readLock();
+    private final Lock writeLock = rwLock.writeLock();
 
-    public Apartment(ReentrantReadWriteLock readWriteLock, List<Item> apartmentsItems) {
-        Apartment.readWriteLock = readWriteLock;
-        Apartment.apartmentsItems = apartmentsItems;
-    }
-
-    public static void ownerAddItemsToApartment(List<Item> ownerItems) {
-        if (ownerItems == null) {
-            throw new IllegalArgumentException("Cписок добавляемых предметов не может быть null ");
-        }
-        ownerItems.forEach(item -> {
-            if (item == null) {
-                throw new IllegalArgumentException("Предмет из списка ownerItems не может быть null");
-            }
-        });
-        readWriteLock.readLock().lock();
+    public void ownerAddItemsToApartment(List<Item> newItems, String name) {
+        readLock.lock();
         try {
-            apartmentsItems.addAll(ownerItems);
-            synchronized (apartmentsItems) {
-                System.out.println(Thread.currentThread().getName() + " добавил вещи и теперь в квартире их: " + apartmentsItems.size());
-            }
+            items.addAll(newItems);
+            System.out.println(name + " добавил " + newItems.size() + " вещей. Всего: " + items.size());
         } finally {
-            readWriteLock.readLock().unlock();
+            readLock.unlock();
         }
     }
 
-    public static List<Item> steal(int maximumWeight) {
-        if (maximumWeight <= 0) {
-            throw new IllegalArgumentException("Вес должен быть положительным");
-        }
-        readWriteLock.writeLock().lock();
+    public List<Item> steal(int maxWeight, String name) {
+        writeLock.lock();
         try {
-            if (apartmentsItems.isEmpty()) {
-                System.out.println(Thread.currentThread().getName() + " Не оказалось вещей для воровства.");
-                return new ArrayList<>();
+            if (items.isEmpty()) {
+                System.out.println(name + " не нашел вещей для кражи");
+                return Collections.emptyList();
             }
-            //копирование перед сортировкой
-            List<Item> currentItems = apartmentsItems.stream()
+
+            List<Item> sorted = items.stream()
                     .sorted(Comparator.comparingDouble(Item::getValuePerWeight).reversed())
                     .toList();
-            System.out.println(Thread.currentThread().getName() + " отсортировал вещи по соотношению цена/вес: " + currentItems);
 
-            List<Item> selectedToSteal = new ArrayList<>();
+            List<Item> stolen = new ArrayList<>();
             int currentWeight = 0;
-            int totalPrice = 0;
 
-            for (Item item : currentItems) {
-                if (currentWeight + item.getWeight() <= maximumWeight) {
-                    selectedToSteal.add(item);
+            for (Item item : sorted) {
+                if (currentWeight + item.getWeight() <= maxWeight) {
+                    stolen.add(item);
                     currentWeight += item.getWeight();
-                    totalPrice += item.getPrice();
                 }
             }
-            apartmentsItems.removeAll(selectedToSteal);
-            System.out.println(Thread.currentThread().getName() + " украл " + selectedToSteal.size() +
-                    " вещей на общую сумму " + totalPrice + ". Осталось вещей: " + apartmentsItems.size());
-            return selectedToSteal;
+
+            items.removeAll(stolen);
+            System.out.println(name + " украл " + stolen.size() + " вещей");
+            return stolen;
         } finally {
-            readWriteLock.writeLock().unlock();
+            writeLock.unlock();
         }
     }
-
 }

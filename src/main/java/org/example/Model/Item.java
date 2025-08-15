@@ -5,8 +5,8 @@ import java.util.List;
 import java.util.Random;
 
 public class Item {
-    private int weight;
-    private int price;
+    private final int weight;
+    private final int price;
     public static Random random = new Random();
 
     public Item(int weight, int price) {

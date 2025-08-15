@@ -2,28 +2,23 @@ package org.example.Model;
 
 import java.util.List;
 
-import static org.example.Model.Item.random;
+public class Owner implements Runnable {
+    private final String name;
+    private final List<Item> ownerItems;
+    private final Apartment apartment;
 
-public class Owner extends Thread {
-    private List<Item> ownerItems;
-
-    public Owner(String name, List<Item> ownerItems) {
-        super(name);
+    public Owner(String name, List<Item> ownerItems, Apartment apartment) {
+        this.name = name;
         this.ownerItems = ownerItems;
+        this.apartment = apartment;
     }
 
     @Override
     public void run() {
         try {
-            Thread.sleep(random.nextInt(50)); // Случайная задержка 0–50 мс
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            Apartment.ownerAddItemsToApartment(ownerItems);
+            apartment.ownerAddItemsToApartment(ownerItems, name);
         } catch (IllegalArgumentException e) {
-            System.out.println(Thread.currentThread().getName() + "Ошибка при добавлении предметов: " + e.getMessage());
+            System.out.println(name + " Ошибка при добавлении предметов: " + e.getMessage());
         }
     }
-
 }
