@@ -28,7 +28,7 @@ public class Apartment {
         try {
             apartmentsItems.addAll(ownerItems);
             synchronized (apartmentsItems) {
-                System.out.println(Thread.currentThread().getName() + "Хозяин добавил вещи и теперь в квартире их: " + apartmentsItems.size());
+                System.out.println(Thread.currentThread().getName() + " добавил вещи и теперь в квартире их: " + apartmentsItems.size());
             }
         } finally {
             readWriteLock.readLock().unlock();
@@ -49,7 +49,7 @@ public class Apartment {
             List<Item> currentItems = apartmentsItems.stream()
                     .sorted(Comparator.comparingDouble(Item::getValuePerWeight).reversed())
                     .toList();
-            System.out.println(Thread.currentThread().getName() + " отсортированы вещи по соотношению цена/вес: " + currentItems);
+            System.out.println(Thread.currentThread().getName() + " отсортировал вещи по соотношению цена/вес: " + currentItems);
 
             List<Item> selectedToSteal = new ArrayList<>();
             int currentWeight = 0;
