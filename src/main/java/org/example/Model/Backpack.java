@@ -1,13 +1,12 @@
 package org.example.Model;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class Backpack {
-    private int maximumWeight;
+    private final int maximumWeight;
     private int currentWeight = 0;
     private int totalPrice = 0;
-    private List<Item> stolenItems = new ArrayList<>();
+    private final List<Item> stolenItems = new ArrayList<>();
 
     public Backpack(int maximumWeight) {
         if (maximumWeight < 0) {
@@ -33,7 +32,6 @@ public class Backpack {
     public int getMaximumWeight() {
         return maximumWeight;
     }
-
 
     @Override
     public String toString() {

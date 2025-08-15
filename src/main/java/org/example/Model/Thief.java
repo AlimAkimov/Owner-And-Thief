@@ -1,38 +1,33 @@
 package org.example.Model;
-
 import java.util.List;
 
-import static org.example.Model.Item.random;
+public class Thief implements Runnable {
+    private final String name;
+    private final Backpack backpack;
+    private final Apartment apartment;
 
-public class Thief extends Thread {
-    private Backpack backpack;
-
-
-    public Thief(String name, int maximumWeight) {
-        super(name);
+    public Thief(String name, int maximumWeight, Apartment apartment) {
+        this.name = name;
         this.backpack = new Backpack(maximumWeight);
+        this.apartment = apartment;
     }
 
+    @Override
     public void run() {
         try {
-            Thread.sleep(random.nextInt(50)); // Случайная задержка 0–50 мс
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-        }
-        try {
-            List<Item> stolen = Apartment.steal(backpack.getMaximumWeight());
+            List<Item> stolen = apartment.steal(backpack.getMaximumWeight(), name);
             if (!stolen.isEmpty()) {
                 backpack.addItemsToBackpack(stolen);
-                System.out.println(Thread.currentThread().getName() + " вор украл: " + backpack);
+                System.out.println(name + " вор украл: " + backpack);
             }
         } catch (IllegalArgumentException e) {
-            System.out.println(Thread.currentThread().getName() + " ошибка при воровстве " + e.getMessage());
+            System.out.println(name + " ошибка при воровстве " + e.getMessage());
         }
+
     }
 
     public Backpack getBackpack() {
         return backpack;
     }
-
-
 }
+
