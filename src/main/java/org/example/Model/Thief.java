@@ -29,5 +29,13 @@ public class Thief implements Runnable {
     public Backpack getBackpack() {
         return backpack;
     }
+
+    public String getName() {
+        return name;
+    }
+
+    public Apartment getApartment() {
+        return apartment;
+    }
 }
 

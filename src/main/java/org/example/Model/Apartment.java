@@ -18,7 +18,7 @@ public class Apartment {
         readLock.lock();
         try {
             items.addAll(newItems);
-            System.out.println(name + " добавил " + newItems.size() + " вещей. Всего: " + items.size());
+            System.out.println(name + " добавил " + newItems.size() + " вещей");
         } finally {
             readLock.unlock();
         }
@@ -52,5 +52,21 @@ public class Apartment {
         } finally {
             writeLock.unlock();
         }
+    }
+
+    public List<Item> getItems() {
+        return items;
+    }
+
+    public ReadWriteLock getRwLock() {
+        return rwLock;
+    }
+
+    public Lock getReadLock() {
+        return readLock;
+    }
+
+    public Lock getWriteLock() {
+        return writeLock;
     }
 }

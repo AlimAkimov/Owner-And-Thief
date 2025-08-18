@@ -4,6 +4,7 @@ import org.example.Model.Apartment;
 import org.example.Model.Item;
 import org.example.Model.Owner;
 import org.example.Model.Thief;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -15,6 +16,17 @@ import java.util.concurrent.TimeUnit;
 
 public class Main {
     private static final Random random = new Random();
+
+    private static Runnable createTask(Runnable runnable, CountDownLatch latch) {
+        return () -> {
+            try {
+                latch.await();
+                runnable.run();
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+            }
+        };
+    }
 
     public static void main(String[] args) {
         try {
@@ -40,26 +52,18 @@ public class Main {
 
             System.out.println("Создалось хозяев: " + numberOfOwners + ", а воров: " + numberOfThieves);
 
-            try (ExecutorService executor = Executors.newFixedThreadPool(numberOfOwners + numberOfThieves)) {
+            List<Item> initialItems = owners.stream()
+                    .flatMap(owner -> owner.getOwnerItems().stream())
+                    .toList();
+            System.out.println("Контрольный список вещей Хозяев до запуска (" + initialItems.size() + "): " + initialItems);
+
+
+            try (ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors())) {
                 CountDownLatch startLatch = new CountDownLatch(1);
 
                 List<Runnable> allTasks = new ArrayList<>();
-                owners.forEach(owner -> allTasks.add(() -> {
-                    try {
-                        startLatch.await();
-                        owner.run();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }));
-                thieves.forEach(thief -> allTasks.add(() -> {
-                    try {
-                        startLatch.await();
-                        thief.run();
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    }
-                }));
+                owners.forEach(owner -> allTasks.add(createTask(owner, startLatch)));
+                thieves.forEach(thief -> allTasks.add(createTask(thief, startLatch)));
                 Collections.shuffle(allTasks);
 
                 allTasks.forEach(executor::execute);
@@ -77,8 +81,31 @@ public class Main {
                 }
             }
 
+            // Собираем список вещей после завершения (в квартире + в рюкзаках)
+            List<Item> finalItems = new ArrayList<>();
+            finalItems.addAll(apartment.getItems());
+            System.out.println("Вещи, оставшиеся в квартире (" + apartment.getItems().size() + "): " + apartment.getItems());
             for (Thief thief : thieves) {
-                System.out.println("Рюкзак после грабежа " + thief.getBackpack());
+                List<Item> stolenItems = thief.getBackpack().getStolenItems();
+                System.out.println("Вещи в рюкзаке " + thief.getName() + " (" + stolenItems.size() + "): " + stolenItems);
+                finalItems.addAll(stolenItems);
+            }
+            System.out.println("Итоговый список вещей после завершения (" + finalItems.size() + "): " + finalItems);
+
+            // Сравниваем списки пообъектно
+            boolean itemsMatch = initialItems.size() == finalItems.size() &&
+                    initialItems.containsAll(finalItems) &&
+                    finalItems.containsAll(initialItems);
+            String resultMessage;
+            if (itemsMatch) {
+                resultMessage = "Все вещи учтены";
+            } else {
+                resultMessage = "Обнаружены расхождения";
+            }
+            System.out.println("Результат сравнения списков: " + resultMessage);
+            if (!itemsMatch) {
+                System.out.println("Изначальные вещи: " + initialItems);
+                System.out.println("Итоговые вещи: " + finalItems);
             }
 
         } catch (IllegalArgumentException e) {
