@@ -21,4 +21,8 @@ public class Owner implements Runnable {
             System.out.println(name + " Ошибка при добавлении предметов: " + e.getMessage());
         }
     }
+
+    public List<Item> getOwnerItems() {
+        return ownerItems;
+    }
 }

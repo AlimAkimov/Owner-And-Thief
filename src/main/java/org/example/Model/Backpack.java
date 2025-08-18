@@ -35,10 +35,30 @@ public class Backpack {
 
     @Override
     public String toString() {
-        return "Рюкзак(" +
+        return "Рюкзак (" +
                 "Вместимость= " + maximumWeight +
                 ", Текущий вес= " + currentWeight +
                 ", Общая стоимость= " + totalPrice +
                 ", Украденные вещи= " + stolenItems;
+    }
+
+    public List<Item> getStolenItems() {
+        return stolenItems;
+    }
+
+    public int getCurrentWeight() {
+        return currentWeight;
+    }
+
+    public void setCurrentWeight(int currentWeight) {
+        this.currentWeight = currentWeight;
+    }
+
+    public int getTotalPrice() {
+        return totalPrice;
+    }
+
+    public void setTotalPrice(int totalPrice) {
+        this.totalPrice = totalPrice;
     }
 }

@@ -2,12 +2,16 @@ package org.example.Model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Item {
     private final int weight;
     private final int price;
-    public static Random random = new Random();
+    private final long id; // Уникальный идентификатор
+    private static final Random random = new Random();
+    private static final AtomicLong idGenerator = new AtomicLong(0);
 
     public Item(int weight, int price) {
         if (price < 0) {
@@ -18,6 +22,7 @@ public class Item {
         }
         this.weight = weight;
         this.price = price;
+        this.id = idGenerator.getAndIncrement(); // Уникальный ID для каждого Item
     }
 
     public static List<Item> generateRandomItems() {
@@ -43,8 +48,24 @@ public class Item {
         return price;
     }
 
+    public long getId() {
+        return id;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Item item = (Item) o;
+        return weight == item.weight && price == item.price && id == item.id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(weight, price, id);
+    }
+
     @Override
     public String toString() {
-        return " Вес= " + weight + ", стоимость= " + price;
+        return String.format("Item-%d (%dkg, %d$)", id, weight, price);
     }
 }
